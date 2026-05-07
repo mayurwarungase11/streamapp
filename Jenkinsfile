@@ -30,7 +30,6 @@ pipeline {
       }
       post {
         always {
-          // Publish test results
           junit 'coverage/junit.xml'
         }
       }
@@ -58,7 +57,6 @@ pipeline {
           sh """
             aws ecr get-login-password --region ${AWS_REGION} | \
             docker login --username AWS --password-stdin ${ECR_REGISTRY}
-
             docker push ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
             docker push ${ECR_REGISTRY}/${ECR_REPO}:latest
           """
@@ -71,18 +69,14 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'github-token', variable: 'GIT_TOKEN')]) {
           sh """
-            # Clone gitops repo
+            rm -rf streamapp-gitops
             git clone https://${GIT_TOKEN}@github.com/mayurwarungase11/streamapp-gitops.git
             cd streamapp-gitops
-
-            # Update image tag in values.yaml
             sed -i 's/tag:.*/tag: "${IMAGE_TAG}"/' helm/streamapp/values.yaml
-
-            # Commit and push
             git config user.email "jenkins@streamapp.com"
             git config user.name "Jenkins CI"
             git add helm/streamapp/values.yaml
-            git commit -m "🚀 Deploy: Update image to build #${IMAGE_TAG}"
+            git commit -m "Deploy: Update image to build #${IMAGE_TAG}"
             git push
           """
         }
@@ -105,7 +99,6 @@ pipeline {
       echo "❌ Pipeline FAILED at Build #${BUILD_NUMBER} - Check logs above"
     }
     always {
-      // Clean up local Docker images to save disk space
       sh "docker rmi ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG} || true"
     }
   }
