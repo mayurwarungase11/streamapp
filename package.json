@@ -5,13 +5,21 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "jest --coverage"
+    "test": "jest --coverage --reporters=default --reporters=jest-junit"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "jest-junit": {
+    "outputDirectory": "coverage",
+    "outputName": "junit.xml"
   },
   "dependencies": {
     "express": "^4.18.2"
   },
   "devDependencies": {
     "jest": "^29.0.0",
-    "supertest": "^6.3.0"
+    "supertest": "^6.3.0",
+    "jest-junit": "^16.0.0"
   }
 }
